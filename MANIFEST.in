@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include *.png
+recursive-include relativistic_adam *.py
+global-exclude *.pyc
+global-exclude __pycache__

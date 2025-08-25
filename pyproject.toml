@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "relativistic-adam"
+version = "1.0.0"
+description = "A PyTorch optimizer that implements a relativistic gradient clipping mechanism, inspired by the theory of special relativity"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Souradeep Nanda"}
+]
+maintainers = [
+    {name = "Souradeep Nanda"}
+]
+keywords = [
+    "pytorch",
+    "optimizer",
+    "machine-learning",
+    "deep-learning",
+    "gradient-clipping",
+    "physics-inspired",
+    "adam",
+    "relativity"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+requires-python = ">=3.7"
+dependencies = [
+    "torch>=1.9.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/Ghost---Shadow/relativistic-adam"
+Repository = "https://github.com/Ghost---Shadow/relativistic-adam"
+"Bug Tracker" = "https://github.com/Ghost---Shadow/relativistic-adam/issues"
+Documentation = "https://github.com/Ghost---Shadow/relativistic-adam#readme"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "black",
+    "isort",
+    "flake8",
+    "mypy"
+]
+test = [
+    "pytest>=6.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["relativistic_adam*"]
+
+[tool.setuptools.package-data]
+relativistic_adam = ["*.png"]
+
+[tool.black]
+line-length = 88
+target-version = ["py37"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.7"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

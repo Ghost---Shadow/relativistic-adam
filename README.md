@@ -200,7 +200,7 @@ else:
 
 ## 📊 Performance
 
-![Gradient Explosion Comparison](high_lr_explosion_comparison.png)
+<img src="high_lr_explosion_comparison.png" alt="Gradient Explosion Comparison" width="50%">
 
 The above figure shows how RelativisticAdam prevents gradient explosion with a high learning rate (LR=1.0) while standard Adam explodes immediately.
 
