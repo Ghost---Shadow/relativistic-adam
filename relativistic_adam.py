@@ -81,6 +81,9 @@ class RelativisticAdam(Optimizer):
         """
         Apply relativistic scaling to prevent update magnitude from exceeding speed limit.
 
+        When ||update|| < c: Apply relativistic scaling (update gets smaller)
+        When ||update|| >= c: Cannot exceed speed of light! Saturate at speed limit
+
         Args:
             update: proposed parameter update
             speed_limit: maximum allowed update magnitude
@@ -93,22 +96,25 @@ class RelativisticAdam(Optimizer):
             # Apply single scaling factor for entire update tensor
             update_norm = torch.norm(update)
             if update_norm > 0:
-                # Relativistic gamma factor
                 ratio = update_norm / speed_limit
+
                 if ratio < 1.0:
-                    # Small updates: minimal effect
+                    # ||update|| < c: Apply relativistic scaling
+                    # γ = 1/√(1 - v²/c²), then scale DOWN by γ (divide)
                     gamma = 1.0 / torch.sqrt(1.0 - ratio * ratio)
+                    return update / gamma
                 else:
-                    # Large updates: saturate at speed limit
-                    # Use tanh-like saturation for numerical stability
+                    # ||update|| >= c: Physically impossible in relativity!
+                    # Saturate at speed limit using smooth function
+                    # Options:
+                    # 1. Hard clip to speed limit
+                    # 2. Smooth saturation with tanh
+                    # We use smooth saturation for better gradients
                     return (
                         update
                         * (speed_limit / update_norm)
                         * torch.tanh(update_norm / speed_limit)
                     )
-
-                # Apply relativistic correction
-                return update / gamma
             return update
 
         elif mode == "per_param":
@@ -116,38 +122,43 @@ class RelativisticAdam(Optimizer):
             update_norm = torch.norm(update.view(-1))
             if update_norm > 0:
                 ratio = update_norm / speed_limit
+
                 if ratio < 1.0:
+                    # ||update|| < c: Apply relativistic scaling
                     gamma = 1.0 / torch.sqrt(1.0 - ratio * ratio)
+                    return update / gamma
                 else:
-                    # Saturate at speed limit
+                    # ||update|| >= c: Saturate smoothly
                     return (
                         update
                         * (speed_limit / update_norm)
                         * torch.tanh(update_norm / speed_limit)
                     )
-                return update / gamma
             return update
 
         elif mode == "per_component":
             # Apply scaling per component (element-wise)
-            # This is the most fine-grained control
-            ratio = torch.abs(update) / speed_limit
-            small_update_mask = ratio < 1.0
+            abs_update = torch.abs(update)
+            ratio = abs_update / speed_limit
 
+            # Create output tensor
             scaled_update = torch.zeros_like(update)
 
-            # For small updates: apply relativistic scaling
-            if small_update_mask.any():
-                gamma = 1.0 / torch.sqrt(1.0 - ratio[small_update_mask] ** 2)
-                scaled_update[small_update_mask] = update[small_update_mask] / gamma
+            # Case 1: |update_i| < c (relativistic scaling applies)
+            small_mask = ratio < 1.0
+            if small_mask.any():
+                # γ_i = 1/√(1 - v_i²/c²)
+                gamma = 1.0 / torch.sqrt(1.0 - ratio[small_mask] ** 2)
+                scaled_update[small_mask] = update[small_mask] / gamma
 
-            # For large updates: saturate at speed limit
-            large_update_mask = ~small_update_mask
-            if large_update_mask.any():
-                scaled_update[large_update_mask] = (
-                    speed_limit
-                    * torch.sign(update[large_update_mask])
-                    * torch.tanh(torch.abs(update[large_update_mask]) / speed_limit)
+            # Case 2: |update_i| >= c (saturate at speed limit)
+            large_mask = ~small_mask
+            if large_mask.any():
+                # Smooth saturation: sign(update) * c * tanh(|update|/c)
+                scaled_update[large_mask] = (
+                    torch.sign(update[large_mask])
+                    * speed_limit
+                    * torch.tanh(abs_update[large_mask] / speed_limit)
                 )
 
             return scaled_update
