@@ -58,7 +58,7 @@ $$m_{rel} = \frac{m_0}{\sqrt{1 - \frac{v^2}{c^2}}}$$
 
 Similarly, RelativisticAdam treats gradient updates as "velocities" and applies a similar scaling:
 
-$$\text{scaled\_update} = \frac{\text{update}}{\sqrt{1 - \left(\frac{\|\text{update}\|}{c}\right)^2}}$$
+$$\text{update}_\text{scaled} = \frac{\text{update}}{\sqrt{1 - \left(\frac{\|\text{update}\|}{c}\right)^2}}$$
 
 Where `c` is the configurable "speed limit" for updates.
 
